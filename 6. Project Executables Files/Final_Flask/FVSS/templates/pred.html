@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Alzheimer's Disease Detection</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      width: 100vw;
+      background-image: url('../static/images/otherbaground.png'); /* Replace 'background-image.jpg' with the name of your image file */
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      color: rgb(10, 10, 10); /* Set text color to white */
+    }
+
+    h1, h2 {
+      color: rgb(9, 9, 9); /* Set heading text color to white */
+    }
+
+    .image-container {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .image-container img {
+      max-width: 300px;
+      margin: 0 10px;
+    }
+
+    #selected-image {
+      max-width: 500px;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Alzheimer's Disease Detection</h1>
+  <button id="detect-btn">Drop the image for detection</button>
+
+  <!-- Page for choosing the image -->
+  <div id="choose-image-page" style="display: none;">
+    <h2>Choose an Image</h2>
+    <input type="file" id="image-input" accept="image/*">
+    <button id="choose-btn">Choose</button>
+  </div>
+
+  <!-- Page for displaying the selected image -->
+  <div id="selected-image-page" style="display: none;">
+    <h2>Selected Image</h2>
+    <img id="selected-image" src="" alt="Selected Image">
+    <button id="analyze-btn">Analyze</button>
+  </div>
+
+
+  <div id="result"></div>
+  <script>
+    const detectBtn = document.getElementById('detect-btn');
+    const chooseImagePage = document.getElementById('choose-image-page');
+    const selectedImagePage = document.getElementById('selected-image-page');
+    const imageInput = document.getElementById('image-input');
+    const chooseBtn = document.getElementById('choose-btn');
+    const selectedImage = document.getElementById('selected-image');
+    const analyzeBtn = document.getElementById('analyze-btn');
+    const resultDiv = document.getElementById('result');
+
+
+    detectBtn.addEventListener('click', () => {
+      chooseImagePage.style.display = 'block';
+    });
+
+    chooseBtn.addEventListener('click', () => {
+      const file = imageInput.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          selectedImage.src = reader.result;
+          chooseImagePage.style.display = 'none';
+          selectedImagePage.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    analyzeBtn.addEventListener('click', () => {       
+        const file = imageInput.files[0];
+        const formData = new FormData();
+        formData.append('image', file);
+      
+       resultDiv.innerHTML = "";
+       // Get the prediction result by sending a request to '/pred' endpoint
+        fetch('/pred', {
+            method: 'POST',
+            body: formData   
+        })
+        .then(response => {
+            if (!response.ok) {
+                console.log('>>>',err.message)
+                throw new Error('Network response was not ok');
+            }
+            return response.text();
+        })
+        .then(prediction => {
+            // alert('Prediction: ' + prediction);     
+            resultDiv.innerHTML = prediction;
+        })
+        .catch(error => {
+            console.error('Error predicting image:', error);
+          });
+    });
+  </script>
+
+</body>
+
+</html>
